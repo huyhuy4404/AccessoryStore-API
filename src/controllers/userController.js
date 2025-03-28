@@ -134,6 +134,50 @@ const loginUser = async (req, res) => {
     }
 };
 
+const getUserByUserName = async (req, res) => {
+    try {
+        const { username } = req.params;
 
+        if (!username) {
+            return res.status(400).json({ error: 'Username is required' });
+        }
 
-module.exports = { getAllUsers,getUserById,postCreateCustomer,postCreateAdmin,loginUser};
+        const pool = await poolPromise;
+        const result = await pool
+            .request()
+            .input('username', sql.NVarChar, username)
+            .query('SELECT * FROM Users WHERE UserName = @username');
+
+        if (result.recordset.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json(result.recordset[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+const getUserByEmail = async (req, res) => {
+    try {
+        const { email } = req.params;
+        if (!email) {
+            return res.status(400).json({ error: 'Email is required' });
+        }
+
+        const pool = await poolPromise;
+        const result = await pool
+            .request()
+            .input('email', sql.NVarChar, email)
+            .query('SELECT * FROM Users WHERE Email = @email');
+
+        if (result.recordset.length === 0) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.json(result.recordset[0]);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+module.exports = { getAllUsers,getUserById,postCreateCustomer,postCreateAdmin,loginUser,getUserByUserName,getUserByEmail};
